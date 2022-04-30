@@ -21,14 +21,18 @@ public class YesRelicCardPickup {
 	public static SpireReturn Insert(CardRewardScreen __instance, SkipCardButton skipButton, AbstractCard hoveredCard){
 		if(AbstractDungeon.player.hasRelic("YesRelic")){
 			System.out.println("Player has YesRelic");
-			//remove the selected card from the options
-			__instance.rItem.cards.remove(hoveredCard);
 
-			//as long as any card remains, show the skip button and allow more to be taken
-			if(!__instance.rItem.cards.isEmpty()){
-				skipButton.show();
+			//if there are cards on the screen, remove the current one
+			if(__instance.rItem != null && __instance.rItem.cards != null) {
+				//remove the selected card from the options
+				__instance.rItem.cards.remove(hoveredCard);
 
-				return SpireReturn.Return(null);
+				//as long as any card remains, show the skip button and allow more to be taken
+				if (!__instance.rItem.cards.isEmpty()) {
+					skipButton.show();
+
+					return SpireReturn.Return(null);
+				}
 			}
 		} else {
 			System.out.println("Player does not have YesRelic");
