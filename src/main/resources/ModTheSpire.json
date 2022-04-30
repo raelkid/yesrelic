@@ -1,0 +1,9 @@
+{
+  "modid": "YesRelic",
+  "name": "YES!",
+  "author_list": ["rael_kid"],
+  "description": "Mod that adds a relic to allow you to answer YES to card rewards",
+  "version": "0.1",
+  "sts_version": "03-07-2022",
+  "mts_version": "2.7.0"
+}
