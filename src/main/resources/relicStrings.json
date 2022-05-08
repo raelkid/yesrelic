@@ -1,9 +1,11 @@
 {
 	"YesRelic": {
 		"NAME": "YesRelic",
-		"FLAVOR": ".... yes!",
+		"FLAVOR": ".... Yes!",
 		"DESCRIPTIONS": [
-			"Gain all cards from the card rewards."
+			"Gain any number of cards from cnt future combat card rewards.",
+			"Gain any number of cards from 1 future combat card reward.",
+			"This relic has been used up."
 		]
 	}
 }

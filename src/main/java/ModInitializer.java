@@ -14,17 +14,19 @@ import com.megacrit.cardcrawl.dungeons.TheCity;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.localization.RelicStrings;
-import com.megacrit.cardcrawl.relics.AbstractRelic;
+import com.megacrit.cardcrawl.relics.AbstractRelic;import com.megacrit.cardcrawl.rooms.AbstractRoom;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 @SpireInitializer
-public class ModInitializer implements EditRelicsSubscriber, StartGameSubscriber, EditStringsSubscriber, PostInitializeSubscriber {
+public class ModInitializer implements EditRelicsSubscriber, StartGameSubscriber, EditStringsSubscriber, PostInitializeSubscriber, PostBattleSubscriber {
 	//This is for the in-game mod settings panel.
 	public static Properties defaultSettings = new Properties();
 	public static final String START_WITH_YES_RELIC = "startWithYesRelic";
+	public static final String LIMIT_USAGES = "limitUsages";
 	public static boolean startWithYesRelic = false;
+	public static boolean limitUsages = true;
 
 	private static final String MODNAME = "YesRelic";
 	private static final String AUTHOR = "rael_kid";
@@ -38,6 +40,7 @@ public class ModInitializer implements EditRelicsSubscriber, StartGameSubscriber
 			SpireConfig config = new SpireConfig("YesRelic", "YesRelicConfig", defaultSettings);
 			config.load();
 			startWithYesRelic = config.getBool(START_WITH_YES_RELIC);
+			limitUsages = config.getBool(LIMIT_USAGES);
 		} catch(Exception ex){}
 	}
 
@@ -49,14 +52,16 @@ public class ModInitializer implements EditRelicsSubscriber, StartGameSubscriber
 
 	@Override
 	public void receiveStartGame(){
-		if(startWithYesRelic && !AbstractDungeon.firstRoomChosen){
-			RelicLibrary.getRelic("YesRelic").makeCopy().instantObtain(AbstractDungeon.player, 1, false);
+		if(startWithYesRelic && !AbstractDungeon.player.hasRelic(YesRelic.RELIC_ID)){
+			RelicLibrary.getRelic(YesRelic.RELIC_ID).makeCopy().instantObtain(AbstractDungeon.player, 1, false);
 		}
+
+		this.resetYesRelicUsage();
 	}
 
 	@Override
 	public void receiveEditRelics(){
-		BaseMod.addRelic(new YesRelic(), RelicType.SHARED);
+		BaseMod.addRelic(new YesRelic(limitUsages), RelicType.SHARED);
 	}
 
 	@Override
@@ -67,12 +72,23 @@ public class ModInitializer implements EditRelicsSubscriber, StartGameSubscriber
 	}
 
 	@Override
+	public void receivePostBattle(AbstractRoom room){
+		this.resetYesRelicUsage();
+	}
+
+	private void resetYesRelicUsage(){
+		if(AbstractDungeon.player.hasRelic(YesRelic.RELIC_ID)){
+			((YesRelic)AbstractDungeon.player.getRelic(YesRelic.RELIC_ID)).resetUsage();
+		}
+	}
+
+	@Override
 	public void receivePostInitialize() {
 		//Create the Mod Menu
 		ModPanel settingsPanel = new ModPanel();
 
 		//Create the toggle to get the relic as a starting relic
-		ModLabeledToggleButton startWithRelicButton = new ModLabeledToggleButton(
+		ModLabeledToggleButton startWithRelicCheckbox = new ModLabeledToggleButton(
 			"Get YesRelic as an additional starting relic.",
 			350.0f, 700.0f, Settings.CREAM_COLOR, FontHelper.charDescFont,
 			startWithYesRelic,
@@ -91,7 +107,29 @@ public class ModInitializer implements EditRelicsSubscriber, StartGameSubscriber
 			}
 		);
 
-		settingsPanel.addUIElement(startWithRelicButton); // Add the button to the settings panel.
+		//Create the checkbox to enable the use limit
+		ModLabeledToggleButton limitUsagesCheckbox = new ModLabeledToggleButton(
+			"Limit YesRelic to 3 usages (restart required).",
+			350.0f, 650.0f, Settings.CREAM_COLOR, FontHelper.charDescFont,
+			limitUsages,
+			settingsPanel,
+			(label) -> {},
+			(button) -> {
+				limitUsages = button.enabled;
+				try {
+					//store the choice
+					SpireConfig config = new SpireConfig("YesRelic", "YesRelicConfig", defaultSettings);
+					config.setBool(LIMIT_USAGES, limitUsages);
+					config.save();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		);
+
+		//add the inputs to the screen
+		settingsPanel.addUIElement(startWithRelicCheckbox);
+		settingsPanel.addUIElement(limitUsagesCheckbox);
 
 		BaseMod.registerModBadge(new Texture("images/badge.png"), MODNAME, AUTHOR, DESCRIPTION, settingsPanel);
 	}

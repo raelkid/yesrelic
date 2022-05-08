@@ -11,15 +11,15 @@ import com.megacrit.cardcrawl.ui.buttons.SkipCardButton;
 
 @SpirePatch(
 	clz= CardRewardScreen.class,
-	method="cardSelectUpdate"
+	method="update"
 )
-public class YesRelicCardPickup {
+public class YesRelicCardPickupTouch {
 
 	@SpireInsertPatch(
-		loc=289,
-		localvars = {"skipButton", "hoveredCard"}
+		loc=137,
+		localvars = {"skipButton", "touchCard"}
 	)
-	public static SpireReturn Insert(CardRewardScreen __instance, SkipCardButton skipButton, AbstractCard hoveredCard){
+	public static SpireReturn Insert(CardRewardScreen __instance, SkipCardButton skipButton, AbstractCard touchCard){
 		//if this is not an actual card reward, continue the main method
 		if(__instance.rItem == null || __instance.rItem.cards == null){
 			return SpireReturn.Continue();
@@ -37,7 +37,7 @@ public class YesRelicCardPickup {
 
 		//otherwise, we can just carry on
 		//remove the selected card from the options
-		__instance.rItem.cards.remove(hoveredCard);
+		__instance.rItem.cards.remove(touchCard);
 
 		//as long as any card remains, show the skip button and allow more to be taken
 		if(!__instance.rItem.cards.isEmpty()){
@@ -49,9 +49,5 @@ public class YesRelicCardPickup {
 			return SpireReturn.Return(null);
 		}
 		return SpireReturn.Continue();
-	}
-
-	public static void resetUsage(){
-
 	}
 }
